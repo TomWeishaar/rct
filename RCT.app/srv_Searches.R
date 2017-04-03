@@ -833,6 +833,9 @@ begin_processing = function(button_num) {
    observeEvent(input$page_link_12, { rv$activeChunk <<- gl$pageLeftChunk + 4 })
    observeEvent(input$page_link_13, { rv$activeChunk <<- length(re$chunked_ids()) })
 
+   # DEBUGGING
+   observeEvent(rv$activeChunk, {print(paste0("rv$activeChunk=",rv$activeChunk))})
+
    # show per page selectors (2)
    observeEvent(input$show_per_page_top, {
       rv$show_per_page <<- input$show_per_page_top

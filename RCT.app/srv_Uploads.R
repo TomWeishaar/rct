@@ -4,7 +4,7 @@
 # This page has code that processes citations from PubMed and other data bases.
 
 # prj$hits is a table with one row for every hit we've ever found. Any data in that row comes from
-#    the original data source, with the following exceptions: Rid, Sid, pmid, pmidOK, and duplicate.
+#    the original data source, with the following exceptions: Rid, Sid, pmid, pmidOK, and dupOf.
 
 # buildR(nrec) is a function that builds a consistent version of this table usable with rbind() to
 #    add new rows to the main table.
