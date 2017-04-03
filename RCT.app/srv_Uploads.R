@@ -329,15 +329,21 @@ cochrane_search = function(file_raw) {
             YR = {
                  r[rec,"Y"] = paste0(file_lines[[ln]][-1], collapse=" ")
                  },
-            VL = {                                                         # this means all the words in the line,
+            VL = {                                                           # this means all the words in the line,
                  r[rec,"V"] = paste0(file_lines[[ln]][-1], collapse=" ")     #   except the first, pasted back together
-                 },                                                             #   (first word is the RIS-like code)
+                 },                                                          #   (first word is the RIS-like code)
             NO = {
                  r[rec,"N"] = paste0(file_lines[[ln]][-1], collapse=" ")
                  },
             PG = {
                  r[rec,"P"] = paste0(file_lines[[ln]][-1], collapse=" ")
                  },
+            PM = {
+                 r[rec,"pmid"] = paste0(file_lines[[ln]][-2], collapse=" ")  # -2 to remove "PUBMED"
+                 },
+#            XR = {  # This is the EMBASE id
+#                 r[rec,???] = paste0(file_lines[[ln]][-2], collapse=" ")
+#                 },
             DO = {
                  r[rec,"doi"] =  paste0(file_lines[[ln]][-1], collapse=" ")
                  },
