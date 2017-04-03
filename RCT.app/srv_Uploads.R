@@ -339,10 +339,10 @@ cochrane_search = function(file_raw) {
                  r[rec,"P"] = paste0(file_lines[[ln]][-1], collapse=" ")
                  },
             PM = {
-                 r[rec,"pmid"] = paste0(file_lines[[ln]][-2], collapse=" ")  # -2 to remove "PUBMED"
+                 r[rec,"pmid"] = paste0(file_lines[[ln]][c(-1,-2)], collapse=" ")  # c(-1,-2) to remove "PUBMED", too
                  },
 #            XR = {  # This is the EMBASE id
-#                 r[rec,???] = paste0(file_lines[[ln]][-2], collapse=" ")
+#                 r[rec,???] = paste0(file_lines[[ln]][c(-1,-2)], collapse=" ")
 #                 },
             DO = {
                  r[rec,"doi"] =  paste0(file_lines[[ln]][-1], collapse=" ")

@@ -27,4 +27,4 @@ shinyApp(ui = ui, server = server)
 # Add a dialog for http errors; otherwise they lock up the stage 1 list
 # On switching projects, more variables need to be cleared - Stage 1 Results for sure
 
-# Open platform for continous online replication and updating of meta-analyses - Opcorum
+# Open platform for continous online replication and updating of meta-analyses - Open-Meta
