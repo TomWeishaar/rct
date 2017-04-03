@@ -16,7 +16,6 @@ RCT_path = paste0(project_path, "/RCT.app/")
 source(paste0(RCT_path, "app.R"))
 shinyApp(ui = ui, server = server)
 
-# Change comment to "comment on review" and add "comment on article"
 # Missing a way to declare duplicates for non-PMID cites
 # Does hits need a "Rin" variable (used to identify the level 1 Rid that a level 2 cite appears in)?
 # Add PMID filter? (replace Page?)
@@ -28,3 +27,10 @@ shinyApp(ui = ui, server = server)
 # On switching projects, more variables need to be cleared - Stage 1 Results for sure
 
 # Open platform for continous online replication and updating of meta-analyses - Open-Meta
+
+
+# Erase bad hit list and go back to process search
+# prj$hits = "empty"
+# prj$sourceInfo$status = "new"
+# prj$lastRid = 2
+# save_prj()
