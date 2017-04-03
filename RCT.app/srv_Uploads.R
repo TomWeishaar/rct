@@ -218,8 +218,8 @@ getPMIDs = function(r) {
    withProgress(value=1, max=nrow(r), message="Getting PMIDs: ", {
       for(i in 1:nrow(r)) {
          setProgress(i, detail=paste0(i, " of ", nrow(r)))
-         # first see if we already have a pmid, if so, skip (possible with Embase)
-         if(!is.na(r$pmid[i]) && nchar(r$pmid[i])>0) { next }
+         # first see if we already have a pmid, if so, skip (possible with Embase/Cochrane)
+         if(!is.na(r$pmid[i]) && nchar(r$pmid[i])>0) { r$pmidOK[i] <- TRUE; next }
          # next search by doi, if we have one...
          if(r$doi[i]!="") {
             pmids = doEsearch(paste0("&term=", r$doi[i],"[All Fields]"))[["pmids"]]
