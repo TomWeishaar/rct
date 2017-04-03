@@ -57,7 +57,7 @@
 
 ### Startup
    # RCT_path can be set up previously; this runs only if it doesn't already exist
-if (!exists("RCT_path")) {RCT_path = paste0(project_path, "/Site/RCT.app/")}
+if (!exists("RCT_path")) {RCT_path = paste0(project_path, "/RCT.app/")}
 
    # PeekOn should be TRUE for development and FALSE for production
    #   It displays information useful for debugging
@@ -79,7 +79,7 @@ library(shinyBS)
 library(xml2)
 library(beepr)
 library(xtable)
-library(rhandsontable)
+# library(rhandsontable)
 
 
    # Options
@@ -564,13 +564,13 @@ observeEvent(rv$modal_warning, {
    #####################################################
    # Individual observeEvents are in page-specific files
    #    source files must have "local=TRUE" option
-   source(paste0(project_path, "/Site/RCT.app/srv_Settings.R"), local=TRUE)
-   source(paste0(project_path, "/Site/RCT.app/srv_Searches.R"), local=TRUE)
-   source(paste0(project_path, "/Site/RCT.app/srv_Uploads.R"), local=TRUE)
-   source(paste0(project_path, "/Site/RCT.app/srv_S1Review.R"), local=TRUE)
+   source(paste0(project_path, "/RCT.app/srv_Settings.R"), local=TRUE)
+   source(paste0(project_path, "/RCT.app/srv_Searches.R"), local=TRUE)
+   source(paste0(project_path, "/RCT.app/srv_Uploads.R"), local=TRUE)
+   source(paste0(project_path, "/RCT.app/srv_S1Review.R"), local=TRUE)
 
       # This loads the remaining outputs for tabs I haven't worked on yet.
-   source(paste0(project_path, "/Site/RCT.app/ui_All.R"), local=TRUE)
+   source(paste0(project_path, "/RCT.app/ui_All.R"), local=TRUE)
 
    # At startup, go to tab in use at end of last session
 print(paste0("prj$options for lastMenu/lastTab: ", prj$options$lastMenu, "/", prj$options$lastTab))

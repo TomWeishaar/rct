@@ -7,7 +7,7 @@ remove(list=objects())
 
    # Paths
 project_path = getwd()
-RCT_path = paste0(project_path, "/Site/RCT.app/")
+RCT_path = paste0(project_path, "/RCT.app/")
 
    # Basic Functions
 # source(paste0(project_path, "/../NHANES/R Syntax Files/Functions/basic-v1.0.R"))    # hm(x); pstar(p); csv(table, filename); chgcolnames(df,olds, news)
