@@ -23,7 +23,7 @@
 #  prj$name                  a string with the name of the project
 
 #  prj$options               a list holding project options, most of which can be edited in the Settings
-#  prj$options$lastTab          last tab opened (for returning to at next startup)
+#  prj$options$lastTab          last tab opened (theoretically for returning to at next startup, but haven't gotten it to work)
 #  prj$options$stage1           a vector of stage1 review choices (editable)
 #  prj$options$stage1_selected  the stage1 option that was last selected (refers only to the Settings)
 #  prj$options$maxhits          maximum allowed hits on a PubMed non-test query (editable)
@@ -564,13 +564,13 @@ observeEvent(rv$modal_warning, {
    #####################################################
    # Individual observeEvents are in page-specific files
    #    source files must have "local=TRUE" option
-   source(paste0(project_path, "/RCT.app/srv_Settings.R"), local=TRUE)
-   source(paste0(project_path, "/RCT.app/srv_Searches.R"), local=TRUE)
-   source(paste0(project_path, "/RCT.app/srv_Uploads.R"), local=TRUE)
-   source(paste0(project_path, "/RCT.app/srv_S1Review.R"), local=TRUE)
+   source(paste0(RCT_path, "/srv_Settings.R"), local=TRUE)
+   source(paste0(RCT_path, "/srv_Searches.R"), local=TRUE)
+   source(paste0(RCT_path, "/srv_Uploads.R"), local=TRUE)
+   source(paste0(RCT_path, "/srv_S1Review.R"), local=TRUE)
 
       # This loads the remaining outputs for tabs I haven't worked on yet.
-   source(paste0(project_path, "/RCT.app/ui_All.R"), local=TRUE)
+   source(paste0(RCT_path, "/ui_All.R"), local=TRUE)
 
    # At startup, go to tab in use at end of last session
 print(paste0("prj$options for lastMenu/lastTab: ", prj$options$lastMenu, "/", prj$options$lastTab))

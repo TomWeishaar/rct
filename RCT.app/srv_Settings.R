@@ -123,8 +123,8 @@ output$dash_opts_msg <- renderText({
          save_RCT()                                                                  # save rct
          prj$name <<- new_name                                                       # change name in prj
          save_prj()                                                                  # save prj
-         from_name = paste0(project_path, "/Site/RCT.app/data - ", old_name, ".R")   # change file name
-         to_name = paste0(project_path, "/Site/RCT.app/data - ", new_name, ".R")     #    "
+         from_name = paste0(RCT_path, "data - ", old_name, ".R")   # change file name
+         to_name = paste0(RCT_path, "data - ", new_name, ".R")     #    "
          file.rename(from_name, to_name)                                             #    "
       }
       rv$render_Settings <<-rv$render_Settings+1
