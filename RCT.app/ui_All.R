@@ -17,7 +17,7 @@ output$tab_S1RAn <- renderUI(
             panelTitle="Stage 1 Analysis:",
             outputType="html",
             panelColor="blue",
-               renderTable(S1RAn_table(), display=c("d", "s", "d", "d")) # see xtable(); +1 for rownames
+               renderTable(S1RAn_table(), display=c("d", "s", "d", "d", "s")) # see xtable(); +1 for rownames
          )
       )
    )
@@ -27,15 +27,19 @@ output$tab_S1RAn <- renderUI(
 
 S1RAn_table = function() {
    vnames = c("Grand Total", "Duplicates", "Total w/o dups", prj$options$stage1)
-   v = data.frame(cat = vnames, n=0, pct=0, stringsAsFactors = FALSE)
-   row.names(v) = vnames
-   v["Grand Total","n"] = length(prj$hits$Rid)
-   v["Grand Total","pct"] = 100
+   v = data.frame(cat = vnames, n=0, pct=0, note="", stringsAsFactors = FALSE)         # Tibbles return tibbles when
+   row.names(v) = vnames                                                      #   subsetting like this. A dataframe
+   v["Grand Total","n"] = length(prj$hits$Rid)                                #   works better.
+   v["Grand Total","pct"] = ""
    v["Duplicates","n"] = sum(prj$hits$dupOf!="")
-   v["Duplicates","pct"] = (v["Duplicates","n"] / v["Grand Total","n"])*100
+   v["Duplicates","pct"] = round((v["Duplicates","n"] / v["Grand Total","n"])*100)
+   v["Duplicates","note"] = "Pct of Grand Total"
    v["Total w/o dups","n"] = v["Grand Total","n"] - v["Duplicates","n"]
-   v["Total w/o dups","pct"] = 100
+   v["Total w/o dups","pct"] = ""
    v["Not reviewed","n"] = v["Total w/o dups","n"] - length(unique(prj$reviews$Rid))
+   v["Not reviewed","pct"] = round((v["Not reviewed","n"] / v["Total w/o dups","n"])*100)
+   v["Not reviewed","note"] = "Pct of Total w/o dups"
+   v["Not in English","note"] = "Pct of Reviewed"
 
    for(i in unique(prj$reviews$Rid)) {                                        # count n
       d = prj$reviews$decision[prj$reviews$Rid==i]
@@ -49,10 +53,11 @@ S1RAn_table = function() {
       }
    }
 
-   for(i in 4:length(v$n)) {                                                  # add pcts
-      v[v$cat[i],"pct"] = (v[v$cat[i],"n"] / v["Total w/o dups","n"])*100
+   nreviewed = v["Total w/o dups","n"] - v["Not reviewed","n"]
+   for(i in 5:length(v$n)) {                                                  # add pcts
+      v[v$cat[i],"pct"] = round((v[v$cat[i],"n"] / nreviewed)*100)
    }
-   colnames(v) = c("Decision", "N", "Pct")
+   colnames(v) = c("Decision", "N", "Pct", "Note")
    row.names(v)=NULL
    return(v)
 }
