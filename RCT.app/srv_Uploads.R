@@ -659,7 +659,7 @@ observeEvent(rv$process_Sid, {
    } else {
       prj$hits <<- rbind(prj$hits, r)
    }
-   dups = which(duplicated(prj$hits$pmid))        # find and mark pmid duplicates
+   dups = which(duplicated(prj$hits$pmid))        # find and mark pmid duplicates AFTER adding new records to old ones
    for(i in dups) {
       if(prj$hits$pmid[i]!="") {                  # skip if pmid is blank, those aren't duplicates
          prj$hits$dupOf[i] = prj$hits$Rid[prj$hits$pmid==prj$hits$pmid[i]][1]  # Note the first Rid ([1]) with a matching PMID

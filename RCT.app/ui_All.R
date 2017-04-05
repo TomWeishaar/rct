@@ -17,11 +17,46 @@ output$tab_S1RAn <- renderUI(
             panelTitle="Stage 1 Analysis:",
             outputType="html",
             panelColor="blue",
-               HTML("Coming soon...")
+               renderTable(S1RAn_table(), display=c("d", "s", "d", "d")) # see xtable(); +1 for rownames
          )
       )
    )
 )
+
+  # Build Stage 1 Review Analysis Table
+
+S1RAn_table = function() {
+   vnames = c("Grand Total", "Duplicates", "Total w/o dups", prj$options$stage1)
+   v = data.frame(cat = vnames, n=0, pct=0, stringsAsFactors = FALSE)
+   row.names(v) = vnames
+   v["Grand Total","n"] = length(prj$hits$Rid)
+   v["Grand Total","pct"] = 100
+   v["Duplicates","n"] = sum(prj$hits$dupOf!="")
+   v["Duplicates","pct"] = (v["Duplicates","n"] / v["Grand Total","n"])*100
+   v["Total w/o dups","n"] = v["Grand Total","n"] - v["Duplicates","n"]
+   v["Total w/o dups","pct"] = 100
+   v["Not reviewed","n"] = v["Total w/o dups","n"] - length(unique(prj$reviews$Rid))
+
+   for(i in unique(prj$reviews$Rid)) {                                        # count n
+      d = prj$reviews$decision[prj$reviews$Rid==i]
+      if(any(d=="Stage 1 pass")) {                                            # Any Stage 1 Pass means pass
+         v["Stage 1 pass","n"] = v["Stage 1 pass","n"]+1
+      } else {                                                                # Otherwise add fractional points
+         fraction = 1/length(d)
+         for(j in d) {
+            v[j,"n"] = v[j,"n"]+fraction
+         }
+      }
+   }
+
+   for(i in 4:length(v$n)) {                                                  # add pcts
+      v[v$cat[i],"pct"] = (v[v$cat[i],"n"] / v["Total w/o dups","n"])*100
+   }
+   colnames(v) = c("Decision", "N", "Pct")
+   row.names(v)=NULL
+   return(v)
+}
+
 
 # some useful code for this tab
 
@@ -32,7 +67,7 @@ output$tab_S1RAn <- renderUI(
 #   # TRUE   53  58 114 103
 #
 # x = merge(prj$hits[,c("Rid", "Sid")], prj$reviews[,c("Rid", "decision")])
-# table(x$decision,x$Sid)
+# as.data.frame.matrix(table(x$decision,x$Sid))
 #
 #   #                      2  3  4  5
 #   # All analogues        5  4  4  0
