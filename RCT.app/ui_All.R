@@ -18,6 +18,7 @@ output$tab_S1RAn <- renderUI(
             outputType="html",
             panelColor="blue",
                {
+                  x = input$s1r_menu                                 # needed to force update on tab change
                   if(is.data.frame(prj$hits)) {
                      renderTable(S1RAn_table(), display=c("d", "s", "d", "d", "s")) # see xtable(); +1 for rownames
                   } else {

@@ -25,6 +25,7 @@ shinyApp(ui = ui, server = server)
 # Allow a reviewer to edit OWN reviews
 # Add a dialog for http errors; otherwise they lock up the stage 1 list
 # On switching projects, more variables need to be cleared - Stage 1 Results for sure
+# During S1 Review, any comments aren't saved on studies that remain "Not reviewed"
 
 # Open platform for continous online replication and updating of meta-analyses - Open-Meta
 
