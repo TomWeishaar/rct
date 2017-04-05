@@ -3,18 +3,18 @@
 
 # A note on chunking
 #
-# Every time a new filter, including no filters at all, is requested, begin by filtering the allHits table
-#    into filteredHits, a vector of Rids. Then chunk filteredHits in a list, where each chunk has the Rids
-#    for one page. Next, using the vector of Rids for the page we're on, get theseHits from allHits. Then
-#    display all hits and set up the pagination.
+# Every time a new filter, including no filters at all, is requested, begin by filtering the prj$hits table;
+#    then prj$hits$Rid becomes filteredHits, a vector of Rids. Then chunk filteredHits in a list, where each
+#    chunk has the Rids for one page. Next, using the vector of Rids for the page we're on, get theseHits
+#    from allHits. Then display all hits and set up the pagination.
 
 
 #############
 # Inits
 
 rv$render_SearchNew <<- 0         # inc to re-render
-gl$init_SearchNew <<- TRUE        # TRUE uses blanks in inputs, FALSE uses existing contents
 rv$render_SearchList <<- 0        # inc to re-render
+gl$init_SearchNew <<- TRUE        # TRUE uses blanks in inputs, FALSE uses existing contents
 gl$init_SearchEdit <<- TRUE       # TRUE gets inputs from Sid, FALSE uses existing contents
 gl$edit_this_Sid <<- "0"          # "0" for List view; an actual Sid gives editing view
 

@@ -513,20 +513,20 @@ observeEvent(input$main_menu, {
          rv$activeChunk = 1                       # when main_menu changes, initialize rv$activeChunk
          rv$show_per_page <<- gl$search_spp
          rememberTab(input$main_menu, input$search_menu)
-#print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
       },
       "Stage 1 Review" = {
          rv$activeChunk = 1                       # when main_menu changes, initialize rv$activeChunk
          rv$show_per_page <<- gl$cites_spp
          rememberTab(input$main_menu, input$s1r_menu)
-#print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
       },
       "Results" = {
          rememberTab(input$main_menu, input$results_menu)
-#print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
       },
       {  rememberTab(input$main_menu)                # for menus without a submenu
-#print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
       }
    )
 })
@@ -534,17 +534,17 @@ observeEvent(input$main_menu, {
    # These are called when the user switches submenus without switching the main_menu.
 observeEvent(input$search_menu, {
    rememberTab(input$main_menu, input$search_menu)
-print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
 })
 
 observeEvent(input$s1r_menu, {
    rememberTab(input$main_menu, input$s1r_menu)
-print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
 })
 
 observeEvent(input$results_menu, {
    rememberTab(input$main_menu, input$results_menu)
-print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
+# print(paste0("Tab change: ", prj$options$lastMenu ,"/", prj$options$lastTab))
 })
 
    # a generic for a modal warning
