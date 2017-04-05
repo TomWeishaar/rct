@@ -659,6 +659,12 @@ observeEvent(rv$process_Sid, {
    } else {
       prj$hits <<- rbind(prj$hits, r)
    }
+   dups = which(duplicated(prj$hits$pmid))        # find and mark pmid duplicates
+   for(i in dups) {
+      if(prj$hits$pmid[i]!="") {                  # skip if pmid is blank, those aren't duplicates
+         prj$hits$dupOf[i] = prj$hits$Rid[prj$hits$pmid==prj$hits$pmid[i]][1]  # Note the first Rid ([1]) with a matching PMID
+      }
+   }
    prj$sourceInfo[thisSid_i, "status"] <<- "processed"
    prj$sourceInfo[thisSid_i, "processed_date"] <<- Sys.time()
    prj$sourceInfo[thisSid_i, "hitsL1"] <<- hitsL1
