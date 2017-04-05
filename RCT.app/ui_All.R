@@ -17,7 +17,13 @@ output$tab_S1RAn <- renderUI(
             panelTitle="Stage 1 Analysis:",
             outputType="html",
             panelColor="blue",
-               renderTable(S1RAn_table(), display=c("d", "s", "d", "d", "s")) # see xtable(); +1 for rownames
+               {
+                  if(is.data.frame(prj$hits)) {
+                     renderTable(S1RAn_table(), display=c("d", "s", "d", "d", "s")) # see xtable(); +1 for rownames
+                  } else {
+                     renderText('<h5 style="color:red">No searches yet...</h5>')
+                  }
+               }
          )
       )
    )
@@ -25,37 +31,49 @@ output$tab_S1RAn <- renderUI(
 
   # Build Stage 1 Review Analysis Table
 
+  # Note that with multiple reviews with different decisions, this awards fractional points. So if
+  #    4 reviewers make 4 different decisions, each decision will get .25 pts. 4 reviewers make 2
+  #    different decisions, each gets .5. If all four agree, the decision gets 1 full pt.
+
 S1RAn_table = function() {
+   haveReviews = is.data.frame(prj$reviews)                                        # Different output if no reviews
    vnames = c("Grand Total", "Duplicates", "Total w/o dups", prj$options$stage1)
-   v = data.frame(cat = vnames, n=0, pct=0, note="", stringsAsFactors = FALSE)         # Tibbles return tibbles when
-   row.names(v) = vnames                                                      #   subsetting like this. A dataframe
-   v["Grand Total","n"] = length(prj$hits$Rid)                                #   works better.
+   v = data.frame(cat = vnames, n=0, pct=0, note="", stringsAsFactors = FALSE)     # Tibbles return tibbles when
+   row.names(v) = vnames                                                           #   subsetting like this. A dataframe
+   v["Grand Total","n"] = length(prj$hits$Rid)                                     #   works better.
    v["Grand Total","pct"] = ""
    v["Duplicates","n"] = sum(prj$hits$dupOf!="")
    v["Duplicates","pct"] = round((v["Duplicates","n"] / v["Grand Total","n"])*100)
    v["Duplicates","note"] = "Pct of Grand Total"
    v["Total w/o dups","n"] = v["Grand Total","n"] - v["Duplicates","n"]
    v["Total w/o dups","pct"] = ""
-   v["Not reviewed","n"] = v["Total w/o dups","n"] - length(unique(prj$reviews$Rid))
+   if(haveReviews) {
+      v["Not reviewed","n"] = v["Total w/o dups","n"] - length(unique(prj$reviews$Rid))
+   } else {
+      v["Not reviewed","n"] = v["Total w/o dups","n"]
+   }
    v["Not reviewed","pct"] = round((v["Not reviewed","n"] / v["Total w/o dups","n"])*100)
    v["Not reviewed","note"] = "Pct of Total w/o dups"
-   v["Not in English","note"] = "Pct of Reviewed"
 
-   for(i in unique(prj$reviews$Rid)) {                                        # count n
-      d = prj$reviews$decision[prj$reviews$Rid==i]
-      if(any(d=="Stage 1 pass")) {                                            # Any Stage 1 Pass means pass
-         v["Stage 1 pass","n"] = v["Stage 1 pass","n"]+1
-      } else {                                                                # Otherwise add fractional points
-         fraction = 1/length(d)
-         for(j in d) {
-            v[j,"n"] = v[j,"n"]+fraction
+   if(haveReviews) {                                                               # If no reviews, skip all this
+      v["Not in English","note"] = "Pct of Reviewed"
+
+      for(i in unique(prj$reviews$Rid)) {                                          # count n
+         d = prj$reviews$decision[prj$reviews$Rid==i]
+         if(any(d=="Stage 1 pass")) {                                              # Any Stage 1 Pass means pass
+            v["Stage 1 pass","n"] = v["Stage 1 pass","n"]+1
+         } else {                                                                  # Otherwise add fractional points
+            fraction = 1/length(d)
+            for(j in d) {
+               v[j,"n"] = v[j,"n"]+fraction
+            }
          }
       }
-   }
 
-   nreviewed = v["Total w/o dups","n"] - v["Not reviewed","n"]
-   for(i in 5:length(v$n)) {                                                  # add pcts
-      v[v$cat[i],"pct"] = round((v[v$cat[i],"n"] / nreviewed)*100)
+      nreviewed = v["Total w/o dups","n"] - v["Not reviewed","n"]
+      for(i in 5:length(v$n)) {                                                    # add percentages to table
+         v[v$cat[i],"pct"] = round((v[v$cat[i],"n"] / nreviewed)*100)
+      }
    }
    colnames(v) = c("Decision", "N", "Pct", "Note")
    row.names(v)=NULL
