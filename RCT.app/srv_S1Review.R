@@ -8,6 +8,8 @@
 
 rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
 rv$reviewRid <<- 0         # 0 gives list; >0 (the location in the active chunk), gives review
+rv$S1R_debounce <<- 0      # used to hide Next/Prev buttons until Verdict is set to "Not reviewed"
+
 
 #############
 # Functions
@@ -403,6 +405,7 @@ output$tab_S1R <- renderUI({
                      actionButton("reviewer_new", "Login", class="btn-primary btn-sm")
                   )
                } else {
+                  rv$S1R_debounce <<- rv$S1R_debounce+1
                   styledPanel(
                      panelTitle="Review - Stage 1:",
                      outputType="table",
@@ -418,11 +421,7 @@ output$tab_S1R <- renderUI({
                         ),
                         column(5,
                            textareaInput("review_comment", "Comment (on review):", value="", rows=3, width="1000px"),
-                           div(style="float:right;",
-                               actionButton("review_prev", "<- Prev", class="btn-primary btn-sm"),
-                               HTML("&nbsp"),
-                               actionButton("review_next", "Next ->", class="btn-primary btn-sm")
-                           ),
+                           uiOutput("S1R_debounce"),     # this is where the Next/Prev buttons go, see below
                            div(style="float:right; clear:right; margin: 3px 0 0 0;",
                               actionButton("review_cancel", "Cancel", class="btn-info btn-sm", style="float:right")
                            )
@@ -454,6 +453,28 @@ output$tab_S1R <- renderUI({
       )
    }
 })
+
+# debounce Next/Prev Buttons
+#   This code tries to solve a problem where sometimes on clicking Next, the +1 record gets the same review as +0
+#      and the program goes to the +2 record.
+
+output$S1R_debounce = renderUI({
+   x=rv$S1R_debounce               # incrementing this forces a re-render
+   count=0
+#   req(input$stage_1_review)
+   while(input$stage_1_review != "Not reviewed") {
+      count=count+1
+      if(count %% 5000 == 0) { print(paste0("Stuck because input$stage_1_review is ", input$stage_1_review)) }
+   }
+   tagList(
+      div(style="float:right;",
+          actionButton("review_prev", "<- Prev", class="btn-primary btn-sm"),
+          HTML("&nbsp"),
+          actionButton("review_next", "Next ->", class="btn-primary btn-sm")
+      )
+   )
+})
+
 
 showReviews = function() {
    if(gl$showReviews) {
