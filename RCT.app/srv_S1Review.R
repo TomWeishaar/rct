@@ -8,7 +8,7 @@
 
 rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
 rv$reviewRid <<- 0         # 0 gives list; >0 (the location in the active chunk), gives review
-rv$S1R_debounce <<- 0      # used to hide Next/Prev buttons until Verdict is set to "Not reviewed"
+# rv$S1R_debounce <<- 0      # used to hide Next/Prev buttons until Verdict is set to "Not reviewed"
 
 
 #############
@@ -405,7 +405,6 @@ output$tab_S1R <- renderUI({
                      actionButton("reviewer_new", "Login", class="btn-primary btn-sm")
                   )
                } else {
-                  rv$S1R_debounce <<- rv$S1R_debounce+1
                   styledPanel(
                      panelTitle="Review - Stage 1:",
                      outputType="table",
@@ -459,12 +458,11 @@ output$tab_S1R <- renderUI({
 #      and the program goes to the +2 record.
 
 output$S1R_debounce = renderUI({
-   x=rv$S1R_debounce               # incrementing this forces a re-render
+   print(paste0("input$stage_1_review is ", input$stage_1_review))
    count=0
-#   req(input$stage_1_review)
    while(input$stage_1_review != "Not reviewed") {
-      count=count+1
       if(count %% 5000 == 0) { print(paste0("Stuck because input$stage_1_review is ", input$stage_1_review)) }
+      count=count+1
    }
    tagList(
       div(style="float:right;",
