@@ -7,9 +7,8 @@
 # Inits
 
 rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
-rv$reviewRid <<- 0         # 0 gives list; >0 (the location in the active chunk), gives review
-#rv$S1R_debounce <<- 0      # used to hide Next/Prev buttons until Verdict is set to "Not reviewed"
-
+gl$reviewRid <<- 0         # 0 gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
+gl$S1R_Rids <<- 0          # The filtered Rid list at the moment we start reviewing.
 
 #############
 # Functions
@@ -117,7 +116,7 @@ completeCite = function(r) {
 
 showComment = function(Rid) {
    return(tagList(
-      textareaInput("article_comment", "Comment (on article):", value=prj$hits$comments[prj$hits$Rid==rv$reviewRid], rows=3, width="1000px")
+      textareaInput("article_comment", "Comment (on article):", value=prj$hits$comments[prj$hits$Rid==gl$reviewRid], rows=3, width="1000px")
    ))
 }
    # checks if this is a skippable duplicate (return(TRUE)) and marks $dupOf on skippable duplicates
@@ -376,7 +375,7 @@ output$cite_list_pagination_btm = renderUI(re$paginBtm())
 
 output$tab_S1R <- renderUI({
    x=rv$render_HitList
-   if(rv$reviewRid == 0) {
+   if(gl$reviewRid == 0) {
       tagList(
          fluidRow(style="margin: 3px 0 0 0",
             column(12,
@@ -406,8 +405,9 @@ output$tab_S1R <- renderUI({
                   )
                } else {
                   if(isTruthy(isolate(input$stage_1_review))) {            # If it's your first time, skip this...
-                     if(isolate(input$stage_1_review)!="Not reviewed") {   #    Otherwise, loiter until radio buttons
+                     if(isolate(input$stage_1_review)!="Not reviewed") {   #    Otherwise, exit-wait-return until radio buttons
                         invalidateLater(250)                               #    are reset to prevent accidental reviews
+                        print("Had to wait for Radio Buttons...")
                      }
                   }
                   styledPanel(
@@ -418,7 +418,7 @@ output$tab_S1R <- renderUI({
                         column(3,
                            HTML("<b>Reviewer:</b> ", reviewer, "<br/>"),
                            actionButton("reviewer_clear", "Change Reviewer", class="btn-danger btn-xs"),
-                           previousReviews(rv$reviewRid)
+                           previousReviews(gl$reviewRid)
                         ),
                         column(3,
                            radioButtons("stage_1_review", "Verdict:", choices = prj$options$stage1, selected = "Not reviewed", width="100%")
@@ -438,13 +438,13 @@ output$tab_S1R <- renderUI({
                      fluidRow(
                         column(12,
                            HTML("<hr/>"),
-                           showCite(rv$reviewRid)
+                           showCite(gl$reviewRid)
                         )
                      ),
                      fluidRow(
                         column(12,
                            HTML("<hr/>"),
-                           showComment(rv$reviewRid)
+                           showComment(gl$reviewRid)
                         )
                      ),
                      fluidRow(
@@ -465,7 +465,7 @@ output$tab_S1R <- renderUI({
 showReviews = function() {
    if(gl$showReviews) {
       if(is.data.frame(prj$reviews)) {  # skip if no reviews yet
-         r = prj$reviews[prj$reviews$Rid==rv$reviewRid, ]
+         r = prj$reviews[prj$reviews$Rid==gl$reviewRid, ]
          if(nrow(r)>0) {
             txt=""
             for(i in 1:nrow(r)) {
@@ -506,7 +506,7 @@ showReviews = function() {
 #
 
 observeEvent(input$pmidCorrect, {
-   i = which(prj$hits$Rid==rv$reviewRid)
+   i = which(prj$hits$Rid==gl$reviewRid)
    prj$hits$pmidOK[i] <<- TRUE
    save_prj()
    if(dupOf(prj$hits$Rid[i], prj$hits$pmid[i])) {
@@ -519,13 +519,13 @@ observeEvent(input$pmidCorrect, {
 })
 
 observeEvent(input$pmidWrong, {
-   prj$hits$pmid[prj$hits$Rid==rv$reviewRid] <<- ""
+   prj$hits$pmid[prj$hits$Rid==gl$reviewRid] <<- ""
    save_prj()
    rv$render_HitList <<- rv$render_HitList+1
 })
 
 observeEvent(input$pmidSubmit, {
-   i = which(prj$hits$Rid==rv$reviewRid)
+   i = which(prj$hits$Rid==gl$reviewRid)
    prj$hits$pmid[i] <<- input$pmidNew
    prj$hits$pmidOK[i] <<- TRUE
    save_prj()
@@ -539,7 +539,7 @@ observeEvent(input$pmidSubmit, {
 })
 
 observeEvent(input$pmidFail, {
-   prj$hits$pmidOK[prj$hits$Rid==rv$reviewRid] <<- TRUE
+   prj$hits$pmidOK[prj$hits$Rid==gl$reviewRid] <<- TRUE
    save_prj()
    rv$render_HitList <<- rv$render_HitList+1
 })
@@ -555,18 +555,18 @@ observeEvent(input$showReviews, {   # on button click, reverse setting of flag f
 })
 
 saveReview = function() {
-print(paste0("current rv$reviewRid=", rv$reviewRid))
-   prj$hits$comments[prj$hits$Rid==rv$reviewRid] <<- input$article_comment # save comment in any case
+print(paste0("current gl$reviewRid=", gl$reviewRid))
+   prj$hits$comments[prj$hits$Rid==gl$reviewRid] <<- input$article_comment # save comment in any case
    if(input$stage_1_review!="Not reviewed") { # don't modify list of reviews if this one is still "Not reviewed"
-      prj$hits$nrev[prj$hits$Rid==rv$reviewRid] <<- prj$hits$nrev[prj$hits$Rid==rv$reviewRid]+1 # inc counter
+      prj$hits$nrev[prj$hits$Rid==gl$reviewRid] <<- prj$hits$nrev[prj$hits$Rid==gl$reviewRid]+1 # inc counter
       if(input$stage_1_review=="Stage 1 pass") {
-         prj$hits$rev[prj$hits$Rid==rv$reviewRid] <<- "3"
+         prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "3"
       } else {
-         if(prj$hits$rev[prj$hits$Rid==rv$reviewRid]=="1") { # don't overwrite a "3" with a "2"!
-            prj$hits$rev[prj$hits$Rid==rv$reviewRid] <<- "2"
+         if(prj$hits$rev[prj$hits$Rid==gl$reviewRid]=="1") { # don't overwrite a "3" with a "2"!
+            prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "2"
          }
       }
-      this_review = tibble(Rid=rv$reviewRid,
+      this_review = tibble(Rid=gl$reviewRid,
                            time=now(),
                            decision=input$stage_1_review,
                            comment=input$review_comment,
@@ -594,35 +594,33 @@ observeEvent(input$review_next, {
 })
 
 gotoPrev = function() {
-   theseIds = re$filtered_ids()                   # determine what to do next:
-   n = which(theseIds==rv$reviewRid)              # where are we in the filtered list of Rids?
-   if(length(n)==0) {                             # check length in case filter dropped our Rid
-      n = gl$RidPosition                          # where we were before the Rid was filtered out
+   n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
+   if(length(n)==0) {                             # check length in case of error
+      print(paste0("In gotoPrev(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
+      gl$reviewRid <<- 0                          #    return to list
    }
-   if(n<=1) {                                     # if we're at or beyond the first one
-      rv$reviewRid <<- 0                          #    return to list
+   if(n<=1) {                                     # if we're at the first one
+      gl$reviewRid <<- 0                          #    return to list
    } else {
-      gl$RidPosition <<- n-1                      # go back one and save where we are now
-      rv$reviewRid <<- theseIds[gl$RidPosition]
+      gl$reviewRid <<- gl$reviewRid -1            #    else go back one
    }
 }
 
 gotoNext = function() {
-   theseIds = re$filtered_ids()                   # determine what to do next:
-   n = which(theseIds==rv$reviewRid)              # where are we in the filtered list of Rids?
-   if(length(n)==0) {                             # check length in case filter dropped our Rid
-      n = gl$RidPosition-1                        # where we were before the Rid was filtered out
+   n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
+   if(length(n)==0) {                             # check length in case of error
+      print(paste0("In gotoNext(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
+      gl$reviewRid <<- 0                          #    return to list
    }
-   if(n>=length(theseIds)) {                      # if we're at or beyond the last one
-      rv$reviewRid <<- 0                          #    return to list
+   if(n>=length(gl$S1R_Rids)) {                   # if we're at the last one
+      gl$reviewRid <<- 0                          #    return to list
    } else {
-      gl$RidPosition <<- n+1                      # go forward one and save where we are now
-      rv$reviewRid <<- theseIds[gl$RidPosition]
+      gl$reviewRid <<- gl$reviewRid + 1           #    else go forward one
    }
 }
 
 observeEvent(input$review_cancel, {
-   rv$reviewRid <<- 0                             # return to list
+   gl$reviewRid <<- 0                             # return to list
 })
 
 observeEvent(input$reviewer_new, {
@@ -635,10 +633,13 @@ observeEvent(input$reviewer_clear, {
    rv$render_HitList <<- rv$render_HitList+1                 # force a new render
 })
 
-# We need the Rid position in filtered Rids in case a prj$ change drops the Rid from the filtered Rids
+# When reviewing begins, lock down Rid list.
+#    If instead you depend on re$filtered_ids(), it can change during reviewing, so for example, if
+#    the filter is set to show only items that haven't been reviewed, you can't back up and see an
+#    item you just reviewed because it will be dropped from re$filtered_ids().
 reviewThis = function(button) {
-   rv$reviewRid <<- re$chunked_ids()[[rv$activeChunk]][button]   # Rid to review
-   gl$RidPosition <<- which(re$filtered_ids()==rv$reviewRid)     #    and its position in filtered_ids
+   gl$S1R_Rids <<- re$filtered_ids()                             # Lock down Rid list
+   gl$reviewRid <<- re$chunked_ids()[[rv$activeChunk]][button]   # Rid to review
    gl$direction <<- gotoNext                                     #    assume we'll go forward after PMID ok
 }                                                                #       if this one is a duplicate
    # These react to clicks on the Review button...
