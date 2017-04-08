@@ -7,7 +7,7 @@
 # Inits
 
 rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
-gl$reviewRid <<- 0         # 0 gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
+gl$reviewRid <<- "0"       # "0" gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
 gl$S1R_Rids <<- 0          # The filtered Rid list at the moment we start reviewing.
 
 #############
@@ -28,7 +28,7 @@ gl$S1R_Rids <<- 0          # The filtered Rid list at the moment we start review
 #       If confirmed no PMID, check for duplicates among other no PMID citations.
 
 showCite = function(Rid) {
-   r <- prj$hits[prj$hits$Rid==Rid,]   # get data for this Rid
+   r <- prj$hits[prj$hits$Rid==Rid,]               # get data for this Rid
    if(r$dupOf!="" || dupOf(r$Rid, r$pmid)) {       # if it's a duplicate, move along...
       gl$direction()                               #    ...nothing to see here
       return("")
@@ -375,7 +375,7 @@ output$cite_list_pagination_btm = renderUI(re$paginBtm())
 
 output$tab_S1R <- renderUI({
    x=rv$render_HitList
-   if(gl$reviewRid == 0) {
+   if(gl$reviewRid == "0") {
       tagList(
          fluidRow(style="margin: 3px 0 0 0",
             column(12,
@@ -554,31 +554,64 @@ observeEvent(input$showReviews, {   # on button click, reverse setting of flag f
    }
 })
 
+### !!! If there's ever an option to delete review rows, it needs to fix prj$reviews$rowNum !!!
 saveReview = function() {
-print(paste0("current gl$reviewRid=", gl$reviewRid))
-   prj$hits$comments[prj$hits$Rid==gl$reviewRid] <<- input$article_comment # save comment in any case
-   if(input$stage_1_review!="Not reviewed") { # don't modify list of reviews if this one is still "Not reviewed"
-      prj$hits$nrev[prj$hits$Rid==gl$reviewRid] <<- prj$hits$nrev[prj$hits$Rid==gl$reviewRid]+1 # inc counter
-      if(input$stage_1_review=="Stage 1 pass") {
-         prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "3"
-      } else {
-         if(prj$hits$rev[prj$hits$Rid==gl$reviewRid]=="1") { # don't overwrite a "3" with a "2"!
-            prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "2"
-         }
-      }
-      this_review = tibble(Rid=gl$reviewRid,
-                           time=now(),
-                           decision=input$stage_1_review,
-                           comment=input$review_comment,
-                           reviewer=reviewer)
-      if(is.data.frame(prj$reviews)){
-         prj$reviews <<- rbind(prj$reviews, this_review)     # add this review to the others
-      } else {
-         prj$reviews <<- this_review                         # special handling for first row
-      }
-      save_prj()
+print(paste0("saving gl$reviewRid=", gl$reviewRid))
+
+   prj$hits$comments[prj$hits$Rid==gl$reviewRid] <<- input$article_comment # save *article* comment in any case
+
+   if(input$stage_1_review=="Not reviewed") {                       # If verdict is "Not reviewed" we're out of here...
+      save_prj()                                                    # But we need a save in case article comment changed
+      return()
    }
+
+   if(is.data.frame(prj$reviews)){                                  # If we have some reviews...
+      r = prj$reviews[prj$reviews$Rid==gl$reviewRid & prj$reviews$reviewer == reviewer,]  # get relevant rows
+      if (nrow(r)>0) {                                              # This reviewer's rows for this Rid
+         r = arrange(r, desc(time))[1,]                             # get the most recent review...
+         if(as.numeric(now() - r$time, units = "hours") <= prj$options$SR1editWindow) {  # if edit window hasn't expired
+            thisRow = r$rowNum                                      # get rowNum for this review
+            prj$reviews[thisRow, "time"] <<- now()                    # update time to the time of this edit
+            prj$reviews[thisRow, "decision"] <<- input$stage_1_review # update verdict
+            prj$reviews[thisRow, "comment"] <<- paste0(r$comment, "\n\n", input$review_comment)  # concatenate comments
+            if(input$stage_1_review=="Stage 1 pass") {              # summarize verdict as 3 (Pass),
+               prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "3"     # at this point 1 (No review) is not an option
+            } else {                                                # overwrite a "3" with a "2" is ok here
+               prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "2"     #   2 (Fail)
+            }
+            save_prj()                                              # Save edits and we're done...
+            return()
+         } # This was an edit and we're done already.
+      } else {
+         thisRow = nrow(prj$reviews)                                # This reviewer hasn't reviewed this article before...
+      }
+   } else {
+      thisRow = 0                                                   # There are no reviews at all yet...
+   }
+   # if we get here, we have a new verdict to store; this part creates the new row for prj$reviews
+   r = tibble(Rid=gl$reviewRid,
+              time=now(),
+              decision=input$stage_1_review,
+              comment=input$review_comment,
+              reviewer=reviewer,
+              rowNum = thisRow + 1)
+   if(thisRow == 0){                                                # this part saves the review
+      prj$reviews <<- r                                             # special handling for first row
+   } else {
+      prj$reviews <<- rbind(prj$reviews, r)                         # add this review to the others
+   }
+      # now increment the prj$hits counters
+   prj$hits$nrev[prj$hits$Rid==gl$reviewRid] <<- prj$hits$nrev[prj$hits$Rid==gl$reviewRid] + 1 # inc number of reviews
+   if(input$stage_1_review=="Stage 1 pass") {
+      prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "3"              # summarize verdict as 3 (Pass),
+   } else {                                                         # don't overwrite a "3" with a "2"!
+      if(prj$hits$rev[prj$hits$Rid==gl$reviewRid]=="1") {           #   1 (Not reviewed)
+         prj$hits$rev[prj$hits$Rid==gl$reviewRid] <<- "2"           #   2 (Fail)
+      }
+   }
+   save_prj()                                                       # and save...
 }
+
 observeEvent(input$review_prev, {
    saveReview()
    updateRadioButtons(session, inputId =  "stage_1_review", label = "Verdict:", choices = prj$options$stage1, selected = "Not reviewed")
@@ -597,30 +630,35 @@ gotoPrev = function() {
    n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
    if(length(n)==0) {                             # check length in case of error
       print(paste0("In gotoPrev(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
-      gl$reviewRid <<- 0                          #    return to list
-   }
-   if(n<=1) {                                     # if we're at the first one
-      gl$reviewRid <<- 0                          #    return to list
+      gl$reviewRid <<- "0"                        #    return to list
    } else {
-      gl$reviewRid <<- gl$reviewRid -1            #    else go back one
+      if(n<=1) {                                  # if we're at the first one
+         gl$reviewRid <<- "0"                     #    return to list
+      } else {
+         gl$reviewRid <<- as.character(as.numeric(gl$S1R_Rids[n-1]))    #    else go back one
+      }
    }
+   rv$render_HitList <<- rv$render_HitList+1      # render the list
 }
 
 gotoNext = function() {
    n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
    if(length(n)==0) {                             # check length in case of error
       print(paste0("In gotoNext(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
-      gl$reviewRid <<- 0                          #    return to list
-   }
-   if(n>=length(gl$S1R_Rids)) {                   # if we're at the last one
-      gl$reviewRid <<- 0                          #    return to list
+      gl$reviewRid <<- "0"                        #    return to list
    } else {
-      gl$reviewRid <<- gl$reviewRid + 1           #    else go forward one
+      if(n>=length(gl$S1R_Rids)) {                # if we're at the last one
+         gl$reviewRid <<- "0"                     #    return to list
+      } else {
+         gl$reviewRid <<- as.character(as.numeric(gl$S1R_Rids[n+1]))    #    else go forward one
+      }
    }
+   rv$render_HitList <<- rv$render_HitList+1      # render the list
 }
 
 observeEvent(input$review_cancel, {
-   gl$reviewRid <<- 0                             # return to list
+   gl$reviewRid <<- "0"                           # return to list
+   rv$render_HitList <<- rv$render_HitList+1      # render the list
 })
 
 observeEvent(input$reviewer_new, {
@@ -630,18 +668,20 @@ observeEvent(input$reviewer_new, {
 
 observeEvent(input$reviewer_clear, {
    reviewer <<- ""
-   rv$render_HitList <<- rv$render_HitList+1                 # force a new render
+   rv$render_HitList <<- rv$render_HitList+1      # force a new render
 })
 
-# When reviewing begins, lock down Rid list.
-#    If instead you depend on re$filtered_ids(), it can change during reviewing, so for example, if
-#    the filter is set to show only items that haven't been reviewed, you can't back up and see an
-#    item you just reviewed because it will be dropped from re$filtered_ids().
+# This function is used by the following group of observeEvents (when Review button is clicked).
+#    When reviewing begins, lock down Rid list. If instead you depend on re$filtered_ids(), it can
+#    change during reviewing, so for example, if the filter is set to show only items that haven't
+#    been reviewed, you can't back up and see an item you just reviewed because it will be dropped
+#    from re$filtered_ids().
 reviewThis = function(button) {
    gl$S1R_Rids <<- re$filtered_ids()                             # Lock down Rid list
    gl$reviewRid <<- re$chunked_ids()[[rv$activeChunk]][button]   # Rid to review
    gl$direction <<- gotoNext                                     #    assume we'll go forward after PMID ok
-}                                                                #       if this one is a duplicate
+   rv$render_HitList <<- rv$render_HitList+1                     # Render the list
+}
    # These react to clicks on the Review button...
 observeEvent(input$cite1, reviewThis(1))
 observeEvent(input$cite2, reviewThis(2))

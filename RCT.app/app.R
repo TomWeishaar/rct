@@ -383,6 +383,7 @@ initialize_prj = function(path=RCT_path, prj_name="My first project"){
                                         "Other exclusion", "Stage 1 pass"),
                              stage1_selected = "Not reviewed",
                              maxhits = 5000,
+                             SR1editWindow = 12,
                              note = ""
                 ),
                 sourceInfo="empty",

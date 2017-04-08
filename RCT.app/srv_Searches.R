@@ -833,9 +833,6 @@ begin_processing = function(button_num) {
    observeEvent(input$page_link_12, { rv$activeChunk <<- gl$pageLeftChunk + 4 })
    observeEvent(input$page_link_13, { rv$activeChunk <<- length(re$chunked_ids()) })
 
-   # DEBUGGING
-   observeEvent(rv$activeChunk, {print(paste0("rv$activeChunk=",rv$activeChunk))})
-
    # show per page selectors (2)
    observeEvent(input$show_per_page_top, {
       rv$show_per_page <<- input$show_per_page_top
@@ -850,7 +847,5 @@ begin_processing = function(button_num) {
       rv$activeChunk <<- 1                       # restarts at chunk 1; seems complicated to improve
    })
 
-# for debugging
-# observeEvent(rv$activeChunk,
-#    print(paste0("rv$activeChunk just changed to: ", rv$activeChunk))
-# )
+   # DEBUGGING pagination problems
+   observeEvent(rv$activeChunk, {print(paste0("rv$activeChunk just changed to: ",rv$activeChunk))})

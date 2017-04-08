@@ -53,7 +53,10 @@ output$tab_Settings <- renderUI({
                ),
                column(4,
                   textInput("option_maxhits", "Maximum PubMed Hits Allowed:", value=prj$options$maxhits, width="100%"),
-                  actionButton("option_maxhits_chg", "Change Maximum", class="btn-primary btn-sm")
+                  actionButton("option_maxhits_chg", "Change Maximum", class="btn-primary btn-sm"),
+                  div(style="margin: 1em 0 0 0;"),  #
+                  textInput("option_SR1editWindow", "Stage 1 Review Edit Window in hours (0 disables editing):", value=prj$options$SR1editWindow, width="100%"),
+                  actionButton("option_SR1editWindow_chg", "Change Window", class="btn-primary btn-sm")
                )
             ),
             HTML("<hr/>"),
