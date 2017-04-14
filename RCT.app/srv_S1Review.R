@@ -209,6 +209,8 @@ re$cite_list_body = reactive({
 #############
 # Reactives
 #
+# See srv_Searches.R for reactives used to build lists with pagination
+
 #   these reactives are for filtering the list of reviews
 
 #    x=rv$render_HitList is to force recalculation when it's possible that prj changed
@@ -494,12 +496,6 @@ showReviews = function() {
       }
    }
 }
-
-#############
-# Reactives
-#
-
-# See srv_Searches.R for reactives used to build lists with pagination
 
 #############
 # Observers

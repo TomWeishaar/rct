@@ -19,13 +19,14 @@ shinyApp(ui = ui, server = server)
 # Missing a way to declare duplicates for non-PMID cites
 # Does hits need a "Rin" variable (used to identify the level 1 Rid that a level 2 cite appears in)?
 # Add PMID filter? (replace Page?)
-# Search analysis
+# Enhance search analysis
 # Vitamin D wiki url processor?
 # Hand entry of PMID search type
-# Allow a reviewer to edit OWN reviews
 # Add a dialog for http errors; otherwise they lock up the stage 1 list
 # On switching projects, more variables need to be cleared - Stage 1 Results for sure
-# During S1 Review, any comments aren't saved on studies that remain "Not reviewed"
+
+### Opaque features
+# During S1 Review, review comments aren't saved on studies that remain "Not reviewed", but article comments ARE saved.
 
 
 # Open platform for continous online replication and updating of meta-analyses - Open-Meta
@@ -36,3 +37,4 @@ shinyApp(ui = ui, server = server)
 # prj$sourceInfo$status = "new"
 # prj$lastRid = 2
 # save_prj()
+
