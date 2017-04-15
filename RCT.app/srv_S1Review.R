@@ -9,6 +9,9 @@
 rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
 gl$reviewRid <<- "0"       # "0" gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
 gl$S1R_Rids <<- 0          # The filtered Rid list at the moment we start reviewing.
+lastNext <<- now()         # These are for debouncing Next/Prev
+lastPrev <<-now()
+debounceWait <<- 4         # if a second next/prev arrives within this many seconds, ignore it.
 
 #############
 # Functions
@@ -603,12 +606,18 @@ print(paste0("saving gl$reviewRid=", gl$reviewRid))
 }
 
 observeEvent(input$review_prev, {
+   lastTime = lastPrev                                              # if a Prev event happens within debouceWait seconds
+   lastPrev <<- now()                                               #     of the last one, ignore it.
+   if(as.numeric(lastPrev-lastTime, units="secs") < debounceWait) { return }
    saveReview()
    gl$direction <<- gotoPrev
    gl$direction()
 })
 
 observeEvent(input$review_next, {
+   lastTime = lastNext                                              # if a Next event calls within debounceWait seconds
+   lastNext <<- now()                                               #     of the last one, ignore it.
+   if(as.numeric(lastNext-lastTime, units="secs") < debounceWait) { return }
    saveReview()
    gl$direction <<- gotoNext
    gl$direction()
