@@ -406,12 +406,6 @@ output$tab_S1R <- renderUI({
                      actionButton("reviewer_new", "Login", class="btn-primary btn-sm")
                   )
                } else {
-                  if(isTruthy(isolate(input$stage_1_review))) {            # If it's your first time, skip this...
-                     if(isolate(input$stage_1_review)!="Not reviewed") {   #    Otherwise, exit-wait-return until radio buttons
-                        invalidateLater(250)                               #    are reset to prevent accidental reviews
-                        print("Had to wait for Radio Buttons...")
-                     }
-                  }
                   styledPanel(
                      panelTitle="Review - Stage 1:",
                      outputType="table",
@@ -610,14 +604,12 @@ print(paste0("saving gl$reviewRid=", gl$reviewRid))
 
 observeEvent(input$review_prev, {
    saveReview()
-   updateRadioButtons(session, inputId =  "stage_1_review", label = "Verdict:", choices = prj$options$stage1, selected = "Not reviewed")
    gl$direction <<- gotoPrev
    gl$direction()
 })
 
 observeEvent(input$review_next, {
    saveReview()
-   updateRadioButtons(session, inputId = "stage_1_review",  label = "Verdict:", choices = prj$options$stage1, selected = "Not reviewed")
    gl$direction <<- gotoNext
    gl$direction()
 })
