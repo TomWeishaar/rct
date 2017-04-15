@@ -549,7 +549,7 @@ observeEvent(input$showReviews, {   # on button click, reverse setting of flag f
 
 ### !!! If there's ever an option to delete review rows, it needs to fix prj$reviews$rowNum !!!
 saveReview = function() {
-print(paste0("saving gl$reviewRid=", gl$reviewRid))
+# print(paste0("saving gl$reviewRid=", gl$reviewRid))
 
    prj$hits$comments[prj$hits$Rid==gl$reviewRid] <<- input$article_comment # save *article* comment in any case
 
@@ -608,7 +608,7 @@ print(paste0("saving gl$reviewRid=", gl$reviewRid))
 observeEvent(input$review_prev, {
    lastTime = lastPrev                                              # if a Prev event happens within debouceWait seconds
    lastPrev <<- now()                                               #     of the last one, ignore it.
-   if(as.numeric(lastPrev-lastTime, units="secs") < debounceWait) { return }
+   if(as.numeric(lastPrev-lastTime, units="secs") < debounceWait) { return() }
    saveReview()
    gl$direction <<- gotoPrev
    gl$direction()
@@ -617,7 +617,8 @@ observeEvent(input$review_prev, {
 observeEvent(input$review_next, {
    lastTime = lastNext                                              # if a Next event calls within debounceWait seconds
    lastNext <<- now()                                               #     of the last one, ignore it.
-   if(as.numeric(lastNext-lastTime, units="secs") < debounceWait) { return }
+#   print(paste0("Elapsed time between calls to observeEvent(Next Button) was ", as.numeric(lastNext-lastTime, units="secs"), " seconds."))
+   if(as.numeric(lastNext-lastTime, units="secs") < debounceWait) { return() }
    saveReview()
    gl$direction <<- gotoNext
    gl$direction()
@@ -626,7 +627,7 @@ observeEvent(input$review_next, {
 gotoPrev = function() {
    n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
    if(length(n)==0) {                             # check length in case of error
-      print(paste0("In gotoPrev(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
+#      print(paste0("In gotoPrev(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
       gl$reviewRid <<- "0"                        #    return to list
    } else {
       if(n<=1) {                                  # if we're at the first one
@@ -641,7 +642,7 @@ gotoPrev = function() {
 gotoNext = function() {
    n = which(gl$S1R_Rids==gl$reviewRid)           # where are we in the Rid list?
    if(length(n)==0) {                             # check length in case of error
-      print(paste0("In gotoNext(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
+#      print(paste0("In gotoNext(), Rid ", gl$reviewRid, " not found in Rid list (gl$S1R_Rids)."))
       gl$reviewRid <<- "0"                        #    return to list
    } else {
       if(n>=length(gl$S1R_Rids)) {                # if we're at the last one
