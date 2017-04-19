@@ -6,12 +6,12 @@
 #############
 # Inits
 
-rv$render_HitList <<- 0    # to force re-render when reviewHit doesn't change
-gl$reviewRid <<- "0"       # "0" gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
-gl$S1R_Rids <<- 0          # The filtered Rid list at the moment we start reviewing.
-lastNext <<- now()         # These are for debouncing Next/Prev
+rv$render_HitList <<- 0       # to force re-render when reviewHit doesn't change
+gl$reviewRid <<- "0"          # "0" gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
+gl$S1R_Rids <<- prj$hits$Rids # The filtered Rid list at the moment we start reviewing; init to all Rids
+lastNext <<- now()            # These are for debouncing Next/Prev
 lastPrev <<-now()
-debounceWait <<- 4         # if a second next/prev arrives within this many seconds, ignore it.
+debounceWait <<- 4            # if a second next/prev arrives within this many seconds, ignore it.
 
 #############
 # Functions
@@ -209,6 +209,18 @@ re$cite_list_body = reactive({
    }
 })
 
+re$cite_list_results = reactive({
+   if(input$main_menu != "Stage 1 Review") {return()}
+   ids = re$filtered_ids()
+   n = length(ids)
+   r = prj$hits$rev[prj$hits$Rid %in% ids]
+   x = sum(r==1)  # Not Reviewed
+   f = sum(r==2)  # Stage 1 fail
+   p = sum(r==3)  # Stage 1 pass
+   return(HTML("<p><b>", format(n, big.mark = ","), "results;", format(x, big.mark = ","), "not reviewed;",
+                         format(f, big.mark = ","), "failed;", format(p, big.mark = ","), "passed.</b></p>"))
+})
+
 #############
 # Reactives
 #
@@ -375,6 +387,7 @@ output$cite_list_filters = renderUI({
 })
 
 output$cite_list_pagination_top = renderUI(re$paginTop())
+output$cite_list_results = renderUI(re$cite_list_results())
 output$cite_list_body = renderUI(re$cite_list_body())
 output$cite_list_pagination_btm = renderUI(re$paginBtm())
 
@@ -390,6 +403,7 @@ output$tab_S1R <- renderUI({
                   panelColor="blue",
                      uiOutput("cite_list_filters"),
                      uiOutput("cite_list_pagination_top"),
+                     uiOutput("cite_list_results"),
                      uiOutput("cite_list_body"),
                      uiOutput("cite_list_pagination_btm")
                )
