@@ -8,7 +8,7 @@
 
 rv$render_HitList <<- 0       # to force re-render when reviewHit doesn't change
 gl$reviewRid <<- "0"          # "0" gives list; >0 (the location in the Rid list, gl$S1R_Rids), gives review
-gl$S1R_Rids <<- prj$hits$Rids # The filtered Rid list at the moment we start reviewing; init to all Rids
+gl$S1R_Rids <<- prj$hits$Rid  # The filtered Rid list at the moment we start reviewing; init to all Rids
 lastNext <<- now()            # These are for debouncing Next/Prev
 lastPrev <<-now()
 debounceWait <<- 4            # if a second next/prev arrives within this many seconds, ignore it.
@@ -102,7 +102,8 @@ completeCite = function(r) {
       HTML("<hr/>"),                #    has to be done when building the output
       HTML(paste0("<b>", r$journal, "</b> ", r$Y, " ", r$V, ":", r$N, " ", r$P, type, "<br>")),
       HTML(paste0(
-      '<b>PMID:</b> <a href="https://www.ncbi.nlm.nih.gov/pubmed/', r$pmid, '">', r$pmid, '</a>',
+      '<b>Rid:</b> ', r$Rid,
+      ' <b>PMID:</b> <a href="https://www.ncbi.nlm.nih.gov/pubmed/', r$pmid, '">', r$pmid, '</a>',
       ' <b>PMCID:</b> ',
            if(is.na(r$pmcid) || r$pmcid=="") {
               "NA "
@@ -588,7 +589,9 @@ saveReview = function() {
             }
             save_prj()                                              # Save edits and we're done...
             return()
-         } # This was an edit and we're done already.
+         } else {
+            thisRow = nrow(prj$reviews)                             # Edit window closed; save new review
+         }
       } else {
          thisRow = nrow(prj$reviews)                                # This reviewer hasn't reviewed this article before...
       }
@@ -620,22 +623,21 @@ saveReview = function() {
 }
 
 observeEvent(input$review_prev, {
-   lastTime = lastPrev                                              # if a Prev event happens within debouceWait seconds
-   lastPrev <<- now()                                               #     of the last one, ignore it.
-   if(as.numeric(lastPrev-lastTime, units="secs") < debounceWait) { return() }
-   saveReview()
-   gl$direction <<- gotoPrev
-   gl$direction()
+   if(as.numeric(now() - lastPrev, units="secs") > debounceWait) {  # If Preev event is more than deboucewait seconds
+      lastPrev <<- now()                                            #   after the last one; we're good to go...
+      saveReview()
+      gl$direction <<- gotoPrev
+      gl$direction()
+   }                                                                # if time lapse is shorter, though, eat event
 })
 
 observeEvent(input$review_next, {
-   lastTime = lastNext                                              # if a Next event calls within debounceWait seconds
-   lastNext <<- now()                                               #     of the last one, ignore it.
-#   print(paste0("Elapsed time between calls to observeEvent(Next Button) was ", as.numeric(lastNext-lastTime, units="secs"), " seconds."))
-   if(as.numeric(lastNext-lastTime, units="secs") < debounceWait) { return() }
-   saveReview()
-   gl$direction <<- gotoNext
-   gl$direction()
+   if(as.numeric(now() - lastNext, units="secs") > debounceWait) {  # If Next event is more than deboucewait seconds
+      lastNext <<- now()                                            #   after the last one; we're good to go
+      saveReview()
+      gl$direction <<- gotoNext
+      gl$direction()
+   }                                                                # if time lapse is shorter, though, eat event
 })
 
 gotoPrev = function() {

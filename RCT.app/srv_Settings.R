@@ -219,7 +219,22 @@ output$dash_opts_msg <- renderText({
 
       # Change PubMed Hits Maximum
    observeEvent(input$option_maxhits_chg, {
-      prj$options$maxhits <<- input$option_maxhits
+      if(is.na(as.numeric(input$option_maxhits))) {                           # check for non-numeric response
+         prj$options$maxhits <<-  "100"                                       #   if non-numeric, make it 100
+      } else {
+         prj$options$maxhits <<- input$option_maxhits
+      }
+      save_prj()
+      rv$render_Settings <<-rv$render_Settings+1
+   })
+
+      # Change Stage 1 Review Editing Window
+   observeEvent(input$option_SR1editWindow_chg, {
+      if(is.na(as.numeric(input$option_SR1editWindow))) {                     # check for non-numeric response
+         prj$options$SR1editWindow <<- "0"                                    #   if non-numeric, make it zero
+      } else {
+         prj$options$SR1editWindow <<- as.numeric(input$option_SR1editWindow)
+      }
       save_prj()
       rv$render_Settings <<-rv$render_Settings+1
    })
