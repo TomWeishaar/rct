@@ -395,6 +395,7 @@ re$filtered_ids = reactive({                                 # pick the appropri
    x = input$save_new_search                                 # force reaction
    x = input$pubmed_save_new_search
    x = input$delete_edit_search
+   x = input$project_selected                                # force a re-do when selected project changes
    if(input$main_menu=="Searches") {
       if(!is.data.frame(prj$sourceInfo)) { return("0") }
       Keepers = as.numeric(prj$sourceInfo$Sid)>0             # temp placeholder for more elaborate filters
