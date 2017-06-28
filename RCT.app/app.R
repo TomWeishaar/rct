@@ -64,21 +64,27 @@ if (!exists("RCT_path")) {RCT_path = paste0(project_path, "/RCT.app/")}
 PeekOn = FALSE
 
    # Libraries
+library(devtools)
 library(foreign)
-library(stringr)
-library(dplyr)
-library(tibble)
-library(purrr)
-library(magrittr)
-library(lubridate)
 library(rmarkdown)
-library(ggplot2)
 library(shiny)
 library(shinythemes)
 library(shinyBS)
 library(xml2)
-library(beepr)
+# library(beepr)
 library(xtable)
+library(DBI)
+library(RMySQL)
+library(pool)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+# library(broom)            # tidy(), glance(), augment() for cleaning up model results
+# library(magrittr)
+# library(ggplot2)
+# library(tibble)
+# library(purrr)
+# library(dplyr)
 # library(rhandsontable)
 
 
@@ -495,6 +501,10 @@ ui = fluidPage(title="RCT.app", theme=shinytheme("readable"),
 #######################################################
 # Shiny Server
 #
+
+# This function is called once for each session
+#   Everything else in the code is called once per instance and is available to all sessions
+#   https://shiny.rstudio.com/articles/scoping.html
 server <- function(input, output, session) {
 
 #################
